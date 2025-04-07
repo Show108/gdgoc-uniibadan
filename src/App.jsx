@@ -16,6 +16,7 @@ import RootLayouts from "./layouts/RootLayouts";
 import Signup from "./pages/signin/Signup";
 
 import RegisterLayout from "./layouts/RegisterLayout";
+import { Account } from "./pages/Account";
 
 
 const router = createBrowserRouter(
@@ -25,6 +26,7 @@ const router = createBrowserRouter(
         <Route index element={<Home />} />
         <Route path="about" element={<About />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="account" element={<Account />} />
 
         
       </Route>
