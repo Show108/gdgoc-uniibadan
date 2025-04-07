@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import {
   VStack,
   Input,
@@ -13,6 +13,7 @@ import {
 import { PasswordInput } from '../../components/ui/password-input';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../../supabaseClient';
 
 export default function Signup() {
   const {
@@ -22,23 +23,41 @@ export default function Signup() {
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onFormSubmit = async (data) => {
+    const { email, password } = data;
+
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error('Error signing up:', error.message);
+        alert(error.message);
+      } else {
+        alert(
+          'Signup successful! Please check your email to confirm your account.'
+        );
+        navigate('/main'); // Redirect to login page
+      }
+    } catch (err) {
+      console.error('Unexpected error:', err);
+    }
   };
-
-  const password = watch('password'); // Watch the password field for validation
-
+  const password = watch('password');
   const navigate = useNavigate();
 
-  const navigateToHome = () => {
-    navigate('/main');
-  };
+  // const navigateToHome = () => {
+  //   navigate('/main');
+  // };
 
-  const navigateToLogin = () => {
-    navigate('/login');
-  };
+  // const navigateToLogin = () => {
+  //   navigate('/login');
+  // };
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onFormSubmit)}>
       <Box bg='black' height='100vh'>
         <Heading color={'white'} textAlign='center' pt={5}>
           Signup
@@ -57,7 +76,13 @@ export default function Signup() {
                 Email <Field.RequiredIndicator />
               </Field.Label>
               <Input
-                {...register('email', { required: 'Email is required' })}
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: 'Invalid email address',
+                  },
+                })}
                 placeholder='me@example.com'
                 variant='flushed'
                 autoComplete='off'
@@ -72,8 +97,14 @@ export default function Signup() {
                 Password <Field.RequiredIndicator />
               </Field.Label>
               <PasswordInput
-                {...register('password', { required: 'Password is required' })}
-                placeholder='enter your password'
+                {...register('password', {
+                  required: 'Password is required',
+                  minLength: {
+                    value: 6,
+                    message: 'Password must be at least 6 characters long',
+                  },
+                })}
+                placeholder='Enter your password'
                 variant='flushed'
                 autoComplete='off'
                 color='gray.800'
@@ -92,7 +123,7 @@ export default function Signup() {
                   validate: (value) =>
                     value === password || 'Passwords do not match',
                 })}
-                placeholder='confirm your password'
+                placeholder='Confirm your password'
                 variant='flushed'
                 autoComplete='off'
                 color='gray.800'
@@ -116,14 +147,7 @@ export default function Signup() {
           </VStack>
 
           <Center>
-            <Button
-              w={'50%'}
-              p={5}
-              mt={10}
-              type='submit'
-              onClick={navigateToHome}
-              cursor='pointer'
-            >
+            <Button w={'50%'} p={5} mt={10} type='submit' cursor='pointer'>
               Submit
             </Button>
           </Center>
@@ -139,6 +163,7 @@ export default function Signup() {
               textDecoration={'underline'}
               ml={1}
               _hover={{ cursor: 'pointer' }}
+              onClick={() => navigate('/login')}
             >
               Sign in
             </Text>
