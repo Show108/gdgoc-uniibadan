@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import {
   Box,
@@ -9,80 +9,83 @@ import {
   Stack,
   mergeRefs,
   useControllableState,
-} from '@chakra-ui/react'
-import * as React from 'react'
-import { LuEye, LuEyeOff } from 'react-icons/lu'
+} from '@chakra-ui/react';
+import * as React from 'react';
+import PropTypes from 'prop-types';
+import { LuEye, LuEyeOff } from 'react-icons/lu';
 
-export const PasswordInput = React.forwardRef(
-  function PasswordInput(props, ref) {
-    const {
-      rootProps,
-      defaultVisible,
-      visible: visibleProp,
-      onVisibleChange,
-      visibilityIcon = { on: <LuEye />, off: <LuEyeOff /> },
-      ...rest
-    } = props
+export const PasswordInput = React.forwardRef(function PasswordInput(
+  props,
+  ref
+) {
+  const {
+    rootProps,
+    defaultVisible,
+    visible: visibleProp,
+    onVisibleChange,
+    visibilityIcon = { on: <LuEye />, off: <LuEyeOff /> },
+    ...rest
+  } = props;
 
-    const [visible, setVisible] = useControllableState({
-      value: visibleProp,
-      defaultValue: defaultVisible || false,
-      onChange: onVisibleChange,
-    })
+  const [visible, setVisible] = useControllableState({
+    value: visibleProp,
+    defaultValue: defaultVisible || false,
+    onChange: onVisibleChange,
+  });
 
-    const inputRef = React.useRef(null)
+  const inputRef = React.useRef(null);
 
-    return (
-      <InputGroup
-        endElement={
-          <VisibilityTrigger
-            disabled={rest.disabled}
-            onPointerDown={(e) => {
-              if (rest.disabled) return
-              if (e.button !== 0) return
-              e.preventDefault()
-              setVisible(!visible)
-            }}
-          >
-            {visible ? visibilityIcon.off : visibilityIcon.on}
-          </VisibilityTrigger>
-        }
-        {...rootProps}
-      >
-        <Input
-          {...rest}
-          ref={mergeRefs(ref, inputRef)}
-          type={visible ? 'text' : 'password'}
-        />
-      </InputGroup>
-    )
-  },
-)
-
-const VisibilityTrigger = React.forwardRef(
-  function VisibilityTrigger(props, ref) {
-    return (
-      <IconButton
-        tabIndex={-1}
-        ref={ref}
-        me='-2'
-        aspectRatio='square'
-        size='sm'
-        variant='ghost'
-        height='calc(100% - {spacing.2})'
-        aria-label='Toggle password visibility'
-        {...props}
+  return (
+    <InputGroup
+      endElement={
+        <VisibilityTrigger
+          disabled={rest.disabled}
+          onPointerDown={(e) => {
+            if (rest.disabled) return;
+            if (e.button !== 0) return;
+            e.preventDefault();
+            setVisible(!visible);
+          }}
+        >
+          {visible ? visibilityIcon.off : visibilityIcon.on}
+        </VisibilityTrigger>
+      }
+      {...rootProps}
+    >
+      <Input
+        {...rest}
+        ref={mergeRefs(ref, inputRef)}
+        type={visible ? 'text' : 'password'}
       />
-    )
-  },
-)
+    </InputGroup>
+  );
+});
+
+const VisibilityTrigger = React.forwardRef(function VisibilityTrigger(
+  props,
+  ref
+) {
+  return (
+    <IconButton
+      tabIndex={-1}
+      ref={ref}
+      me='-2'
+      aspectRatio='square'
+      size='sm'
+      variant='ghost'
+      height='calc(100% - {spacing.2})'
+      aria-label='Toggle password visibility'
+      {...props}
+    />
+  );
+});
 
 export const PasswordStrengthMeter = React.forwardRef(
   function PasswordStrengthMeter(props, ref) {
-    const { max = 4, value, ...rest } = props
+    const { max = 4, value, ...rest } = props;
 
-    const percent = (value / max) * 100
-    const { label, colorPalette } = getColorPalette(percent)
+    const percent = (value / max) * 100;
+    const { label, colorPalette } = getColorPalette(percent);
 
     return (
       <Stack align='flex-end' gap='1' ref={ref} {...rest}>
@@ -105,17 +108,35 @@ export const PasswordStrengthMeter = React.forwardRef(
         </HStack>
         {label && <HStack textStyle='xs'>{label}</HStack>}
       </Stack>
-    )
-  },
-)
+    );
+  }
+);
+
+// Add PropTypes validation
+PasswordInput.propTypes = {
+  rootProps: PropTypes.object,
+  defaultVisible: PropTypes.bool,
+  visible: PropTypes.bool,
+  onVisibleChange: PropTypes.func,
+  visibilityIcon: PropTypes.shape({
+    on: PropTypes.node.isRequired,
+    off: PropTypes.node.isRequired,
+  }),
+};
+
+// Add PropTypes validation for PasswordStrengthMeter
+PasswordStrengthMeter.propTypes = {
+  max: PropTypes.number,
+  value: PropTypes.number.isRequired,
+};
 
 function getColorPalette(percent) {
   switch (true) {
     case percent < 33:
-      return { label: 'Low', colorPalette: 'red' }
+      return { label: 'Low', colorPalette: 'red' };
     case percent < 66:
-      return { label: 'Medium', colorPalette: 'orange' }
+      return { label: 'Medium', colorPalette: 'orange' };
     default:
-      return { label: 'High', colorPalette: 'green' }
+      return { label: 'High', colorPalette: 'green' };
   }
 }
