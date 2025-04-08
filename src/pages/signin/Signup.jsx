@@ -96,7 +96,7 @@ export default function Signup() {
           </VStack>
 
           <Center>
-            <Button w={"50%"} p={5} mt={10} type="submit" onClick={navigateToHome} cursor="pointer">
+            <Button w={"50%"} p={5} mt={10} type="submit">
               Submit
             </Button>
           </Center>
