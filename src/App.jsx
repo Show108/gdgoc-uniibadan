@@ -17,6 +17,7 @@ import Signup from "./pages/signin/Signup";
 
 import RegisterLayout from "./layouts/RegisterLayout";
 import { Account } from "./pages/Account";
+import Login from "./pages/signin/Login";
 
 
 const router = createBrowserRouter(
@@ -32,6 +33,7 @@ const router = createBrowserRouter(
       </Route>
       <Route path="/" element={<RegisterLayout />}>
         <Route index element={<Signup />} />
+        <Route path="login" element={<Login/>} />
       </Route>
     </>
   )

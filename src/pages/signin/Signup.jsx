@@ -14,6 +14,7 @@ import { PasswordInput } from '../../components/ui/password-input';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import logo from '../../assets/check-logo.png';
 
 export default function Signup() {
   const {
@@ -24,12 +25,13 @@ export default function Signup() {
   } = useForm();
 
   const onFormSubmit = async (data) => {
-    const { email, password } = data;
+    const { email, password, referral} = data;
 
     try {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        referral
       });
 
       if (error) {
@@ -58,8 +60,11 @@ export default function Signup() {
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
-      <Box bg='black' height='100vh'>
-        <Heading color={'white'} textAlign='center' pt={5}>
+      <Box bg='grey' height='100vh'>
+        <Center pt={5}>
+          <img src={logo} alt='Logo' width='50px' height='50px' />
+        </Center>
+        <Heading color={'white'} textAlign='center' pt={3}>
           Signup
         </Heading>
         <Box
