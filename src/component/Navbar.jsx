@@ -1,6 +1,6 @@
 import { Box, Flex, Text, Icon } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
-import { FaHome, FaTasks, FaEnvelope, FaUser } from "react-icons/fa";
+import { FaHome, FaUserFriends, FaWallet, FaUser } from "react-icons/fa";
 
 export default function Navbar() {
   return (
@@ -13,10 +13,11 @@ export default function Navbar() {
       zIndex={1000}
     >
       <Flex justifyContent="space-around" alignItems="center" py={2}>
+        {/* Home */}
         <NavLink
           to="/main"
           style={({ isActive }) => ({
-            color: isActive ? "#3182CE" : "inherit", // Remove color when not active
+            color: isActive ? "#3182CE" : "inherit", // Change color when active
             textDecoration: "none",
           })}
         >
@@ -25,28 +26,32 @@ export default function Navbar() {
             <Text fontSize="sm">Home</Text>
           </Flex>
         </NavLink>
+
+        {/* Invite */}
         <NavLink
-          to="/main/contact"
+          to="/main/invite"
           style={({ isActive }) => ({
             color: isActive ? "#3182CE" : "black", // Change color when active
             textDecoration: "none",
           })}
         >
           <Flex direction="column" align="center">
-            <Icon as={FaTasks} boxSize={5} />
-            <Text fontSize="sm">Task</Text>
+            <Icon as={FaUserFriends} boxSize={5} />
+            <Text fontSize="sm">Invite</Text>
           </Flex>
         </NavLink>
+
+        {/* Wallet */}
         <NavLink
-          to="/main/about"
+          to="/main/wallet"
           style={({ isActive }) => ({
             color: isActive ? "#3182CE" : "black", // Change color when active
             textDecoration: "none",
           })}
         >
           <Flex direction="column" align="center">
-            <Icon as={FaEnvelope} boxSize={5} />
-            <Text fontSize="sm">Message</Text>
+            <Icon as={FaWallet} boxSize={5} />
+            <Text fontSize="sm">Wallet</Text>
           </Flex>
         </NavLink>
         <NavLink
