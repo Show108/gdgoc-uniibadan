@@ -1,18 +1,19 @@
-// import React from 'react';
-import PropTypes from 'prop-types';
-import { Navigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
+import { Navigate, Outlet } from 'react-router-dom';
+import useSession from '../context/useSession';
+import Loader from './Loader';
 
-export default function ProtectedRoute({ children }) {
-  const user = supabase.auth.user();
+const ProtectedRoute = () => {
+  const { user, loading } = useSession();
 
-  if (!user) {
-    return <Navigate to='/login' />;
+  if (loading) {
+    return <Loader />;
   }
 
-  return children;
-}
+  if (!user) {
+    return <Navigate to='/login' replace />;
+  }
 
-ProtectedRoute.propTypes = {
-  children: PropTypes.node.isRequired,
+  return <Outlet />;
 };
+
+export default ProtectedRoute;

@@ -1,4 +1,3 @@
-// import React from 'react';
 import {
   VStack,
   Input,
@@ -14,6 +13,7 @@ import { PasswordInput } from '../../components/ui/password-input';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../supabaseClient';
+import useSession from '../../context/useSession'; // Import useSession
 import logo from '../../assets/check-logo.png';
 
 export default function Signup() {
@@ -24,43 +24,59 @@ export default function Signup() {
     formState: { errors },
   } = useForm();
 
+  const password = watch('password');
+  const navigate = useNavigate();
+  const { setUser } = useSession(); // Access setUser from SessionContext
+
   const onFormSubmit = async (data) => {
-    const { email, password, referral} = data;
+    const { email, password } = data;
 
     try {
-      const { error } = await supabase.auth.signUp({
+      // Query the user_profiles view to check if the email exists
+      const { data: user, error: queryError } = await supabase
+        .from('user_profiles') // Replace with your view name
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (queryError && queryError.code !== 'PGRST116') {
+        // Handle unexpected query errors (e.g., database issues)
+        console.error('Error querying user_profiles:', queryError.message);
+        alert('An error occurred while checking your email. Please try again.');
+        return;
+      }
+
+      if (user) {
+        // Email already exists
+        alert('This email is already registered. Please log in instead.');
+        return;
+      }
+
+      // Proceed with signup if the email does not exist
+      const { data: session, error: signupError } = await supabase.auth.signUp({
         email,
         password,
-        referral
       });
 
-      if (error) {
-        console.error('Error signing up:', error.message);
-        alert(error.message);
+      if (signupError) {
+        console.error('Error signing up:', signupError.message);
+        alert(signupError.message);
       } else {
         alert(
           'Signup successful! Please check your email to confirm your account.'
         );
-        navigate('/main'); // Redirect to login page
+        setUser(session?.user || null); // Update global session state
+        navigate('/main'); // Redirect to the main page
       }
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error('Unexpected error:', err); // Log the full error object
+      alert('An unexpected error occurred. Please try again later.');
     }
   };
-  const password = watch('password');
-  const navigate = useNavigate();
-
-  // const navigateToHome = () => {
-  //   navigate('/main');
-  // };
-
-  // const navigateToLogin = () => {
-  //   navigate('/login');
-  // };
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)}>
-      <Box bg='grey' height='100vh'>
+      <Box bg='grey'>
         <Center pt={5}>
           <img src={logo} alt='Logo' width='50px' height='50px' />
         </Center>
@@ -72,7 +88,6 @@ export default function Signup() {
           px={10}
           borderTopLeftRadius={50}
           overflow={'hidden'}
-          height='100vh'
           mt={15}
         >
           <VStack gap='7' width='full' mt={20}>
@@ -160,7 +175,8 @@ export default function Signup() {
             flexDirection={'row'}
             alignItems={'center'}
             justifyContent={'center'}
-            mt={10}
+            mt={5}
+            mb={5}
           >
             <Text color={'black'}>Already have an account?</Text>
             <Text
