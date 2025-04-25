@@ -1,71 +1,71 @@
-import { Box, Flex, Text, Icon } from "@chakra-ui/react";
-import { NavLink } from "react-router-dom";
-import { FaHome, FaUserFriends, FaWallet, FaUser } from "react-icons/fa";
+import { Box, Flex, Text, Icon } from '@chakra-ui/react';
+import { Link, useLocation } from 'react-router-dom';
+import { FaHome, FaUserFriends, FaWallet, FaUser } from 'react-icons/fa';
 
 export default function Navbar() {
+  const location = useLocation(); // Get the current path
+
   return (
     <Box
-      position="fixed"
+      position='fixed'
       bottom={0}
-      width="100%"
-      bg="white"
-      boxShadow="0 -2px 5px rgba(0, 0, 0, 0.1)"
+      width='100%'
+      bg='white'
+      boxShadow='0 -2px 5px rgba(0, 0, 0, 0.1)'
       zIndex={1000}
     >
-      <Flex justifyContent="space-around" alignItems="center" py={2}>
-        {/* Home */}
-        <NavLink
-          to="/main"
-          style={({ isActive }) => ({
-            color: isActive ? "#3182CE" : "inherit", // Change color when active
-            textDecoration: "none",
-          })}
+      <Flex justifyContent='space-around' alignItems='center' py={2}>
+        <Link
+          to='/main'
+          style={{
+            color: location.pathname === '/main' ? '#3182CE' : 'black',
+            textDecoration: 'none',
+          }}
         >
-          <Flex direction="column" align="center">
+          <Flex direction='column' align='center'>
             <Icon as={FaHome} boxSize={5} />
-            <Text fontSize="sm">Home</Text>
+            <Text fontSize='sm'>Home</Text>
           </Flex>
-        </NavLink>
+        </Link>
 
-        {/* Invite */}
-        <NavLink
-          to="/main/invite"
-          style={({ isActive }) => ({
-            color: isActive ? "#3182CE" : "black", // Change color when active
-            textDecoration: "none",
-          })}
+        <Link
+          to='/main/invite'
+          style={{
+            color: location.pathname === '/main/invite' ? '#3182CE' : 'black',
+            textDecoration: 'none',
+          }}
         >
-          <Flex direction="column" align="center">
+          <Flex direction='column' align='center'>
             <Icon as={FaUserFriends} boxSize={5} />
-            <Text fontSize="sm">Invite</Text>
+            <Text fontSize='sm'>Invite</Text>
           </Flex>
-        </NavLink>
+        </Link>
 
-        {/* Wallet */}
-        <NavLink
-          to="/main/wallet"
-          style={({ isActive }) => ({
-            color: isActive ? "#3182CE" : "black", // Change color when active
-            textDecoration: "none",
-          })}
+        <Link
+          to='/main/wallet'
+          style={{
+            color: location.pathname === '/main/wallet' ? '#3182CE' : 'black',
+            textDecoration: 'none',
+          }}
         >
-          <Flex direction="column" align="center">
+          <Flex direction='column' align='center'>
             <Icon as={FaWallet} boxSize={5} />
-            <Text fontSize="sm">Wallet</Text>
+            <Text fontSize='sm'>Wallet</Text>
           </Flex>
-        </NavLink>
-        <NavLink
-          to="/main/account"
-          style={({ isActive }) => ({
-            color: isActive ? "#3182CE" : "black", // Change color when active
-            textDecoration: "none",
-          })}
+        </Link>
+
+        <Link
+          to='/main/account'
+          style={{
+            color: location.pathname === '/main/account' ? '#3182CE' : 'black',
+            textDecoration: 'none',
+          }}
         >
-          <Flex direction="column" align="center">
+          <Flex direction='column' align='center'>
             <Icon as={FaUser} boxSize={5} />
-            <Text fontSize="sm">Account</Text>
+            <Text fontSize='sm'>Account</Text>
           </Flex>
-        </NavLink>
+        </Link>
       </Flex>
     </Box>
   );
