@@ -5,7 +5,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import '@fontsource/raleway/400.css';
 import '@fontsource/prompt/700.css';
-import '@fontsource/roboto/400.css';
+import '@fontsource/roboto/700.css';
 import { SessionProvider } from './context/SessionContext';
 
 export const system = createSystem(defaultConfig, {
