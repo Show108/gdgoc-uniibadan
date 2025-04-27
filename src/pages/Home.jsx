@@ -41,8 +41,8 @@ export const Home = () => {
   const username = user?.email.split('@')[0] || 'Guest';
 
   return (
-    <div>
+    <>
       <h1>Hello {username}</h1>
-    </div>
+    </>
   );
 };
