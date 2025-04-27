@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaChevronLeft,FaBars, FaWallet, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft,FaBars, FaWallet, FaPaperPlane } from "react-icons/fa";
 
 export default function Wallet() {
   const navigate = useNavigate();
@@ -70,7 +70,7 @@ export default function Wallet() {
             </Button>
             <Button flex="1" ml={2} borderRadius={'md'} bg={'darkgreen'}>
             <Text fontSize="sm" fontWeight={'bold'}>Withdraw</Text> 
-            <Icon as={FaChevronRight} boxSize={4} ml={1} />
+            <Icon as={FaPaperPlane} boxSize={4} ml={1} />
             </Button>
           </Flex>
       <Box bg="white" boxShadow="md" borderRadius="md" p={4}>
