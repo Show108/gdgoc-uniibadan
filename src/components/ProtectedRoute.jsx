@@ -13,6 +13,10 @@ const ProtectedRoute = () => {
     return <Navigate to='/login' replace />;
   }
 
+  if (!user.email_confirmed_at) {
+    return <Navigate to='/login' replace />;
+  }
+
   return <Outlet />;
 };
 

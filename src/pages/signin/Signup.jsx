@@ -11,9 +11,10 @@ import {
 } from '@chakra-ui/react';
 import { PasswordInput } from '../../components/ui/password-input';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
-import useSession from '../../context/useSession'; // Import useSession
+import useSession from '../../context/useSession';
 import logo from '../../assets/check-logo.png';
 
 export default function Signup() {
@@ -26,33 +27,41 @@ export default function Signup() {
 
   const password = watch('password');
   const navigate = useNavigate();
-  const { setUser } = useSession(); // Access setUser from SessionContext
+  const { setUser } = useSession();
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const referralCodeFromURL = queryParams.get('ref');
+
+  const [referralCode, setReferralCode] = useState('');
+
+  useEffect(() => {
+    if (referralCodeFromURL) {
+      setReferralCode(referralCodeFromURL);
+    }
+  }, [referralCodeFromURL]);
 
   const onFormSubmit = async (data) => {
     const { email, password } = data;
 
     try {
-      // Query the user_profiles view to check if the email exists
       const { data: user, error: queryError } = await supabase
-        .from('user_profiles') // Replace with your view name
+        .from('user_profiles')
         .select('*')
         .eq('email', email)
         .single();
 
       if (queryError && queryError.code !== 'PGRST116') {
-        // Handle unexpected query errors (e.g., database issues)
         console.error('Error querying user_profiles:', queryError.message);
         alert('An error occurred while checking your email. Please try again.');
         return;
       }
 
       if (user) {
-        // Email already exists
         alert('This email is already registered. Please log in instead.');
         return;
       }
 
-      // Proceed with signup if the email does not exist
       const { data: session, error: signupError } = await supabase.auth.signUp({
         email,
         password,
@@ -61,15 +70,58 @@ export default function Signup() {
       if (signupError) {
         console.error('Error signing up:', signupError.message);
         alert(signupError.message);
-      } else {
-        alert(
-          'Signup successful! Please check your email to confirm your account.'
-        );
-        setUser(session?.user || null); // Update global session state
-        navigate('/main'); // Redirect to the main page
+        return;
       }
+
+      const newUser = session?.user;
+      if (!newUser) {
+        alert('Signup succeeded but no user was returned.');
+        return;
+      }
+
+      if (referralCode) {
+        const { data: referrer } = await supabase
+          .from('user_data')
+          .select('id')
+          .eq('referral_code', referralCode)
+          .single();
+
+        if (referrer && referrer.id) {
+          const { error: insertError } = await supabase
+            .from('referrals')
+            .insert({
+              referrer_id: referrer.id,
+              referred_user_id: newUser.id,
+              referred_email: email,
+            });
+
+          if (insertError) {
+            console.error('Error inserting referral:', insertError.message);
+          }
+        } else {
+          console.warn('Invalid referral code, referrer not found.');
+        }
+      }
+
+      alert(
+        'Signup successful! Please check your email to confirm your account.'
+      );
+      setUser(newUser);
+      navigate('/main', { replace: true });
+
+      // if (signupError) {
+      //   console.error('Error signing up:', signupError.message);
+      //   console.log('Error details:', signupError);
+      //   alert(signupError.message);
+      // } else {
+      //   alert(
+      //     'Signup successful! Please check your email to confirm your account.'
+      //   );
+      //   setUser(session?.user || null);
+      //   navigate('/main', { replace: true });
+      // }
     } catch (err) {
-      console.error('Unexpected error:', err); // Log the full error object
+      console.error('Unexpected error:', err);
       alert('An unexpected error occurred. Please try again later.');
     }
   };
@@ -158,10 +210,13 @@ export default function Signup() {
               <Field.Label color={'black'}>Referral</Field.Label>
               <Input
                 {...register('referral')}
+                value={referralCode}
+                isReadOnly={!!referralCodeFromURL}
                 placeholder='enter referral code'
                 variant='flushed'
                 autoComplete='off'
                 color='gray.800'
+                onChange={(e) => setReferralCode(e.target.value)}
               />
             </Field.Root>
           </VStack>

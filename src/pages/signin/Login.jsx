@@ -41,7 +41,7 @@ export default function Login() {
       } else {
         alert('Login successful!');
         setUser(session?.user || null);
-        navigate('/main');
+        navigate('/main', { replace: true });
       }
     } catch (err) {
       console.error('Unexpected error:', err);
