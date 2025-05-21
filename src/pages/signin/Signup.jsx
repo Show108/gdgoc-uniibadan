@@ -15,7 +15,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabaseClient';
 import useSession from '../../context/useSession';
-import logo from '../../assets/check-logo.png';
+import logo from '../../assets/logo.png';
 
 export default function Signup() {
   const {

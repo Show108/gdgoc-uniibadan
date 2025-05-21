@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Flex,
@@ -6,41 +6,79 @@ import {
   Icon,
   Text,
   Spacer,
-  HStack,
-  VStack,
   Button,
-} from '@chakra-ui/react';
-import { FaBell, FaCalendarAlt } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import useSession from '../context/useSession';
-import logo from '../assets/check-logo.png';
-import Loader from '../components/Loader';
-import { supabase } from '../supabaseClient';
+} from "@chakra-ui/react";
+import { FaBell, FaCalendarAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import useSession from "../context/useSession";
+import logo from "../assets/logo.png";
+import Loader from "../components/Loader";
+import { supabase } from "../supabaseClient";
+import { LuCheck, LuPlus } from "react-icons/lu";
 
 export const Home = () => {
   const { user, loading, setUser } = useSession();
   const navigate = useNavigate();
-
-  const username = user?.email.split('@')[0] || 'Guest';
-
-  const currentDate = new Date();
-  const currentDay = currentDate.toLocaleDateString('en-US', {
-    weekday: 'short',
-  });
-  const daysOfWeek = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date(currentDate);
-    date.setDate(currentDate.getDate() - currentDate.getDay() + i);
-    return {
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
-      date: date.toLocaleDateString('en-US', { day: 'numeric' }),
-    };
+  const username = user?.email.split("@")[0] || "Guest";
+  const todayDate = new Date();
+  const todayDateStr = todayDate.toISOString().slice(0, 10);
+  const daysInMonth = Array.from({ length: 30 }, (_, i) => {
+    const d = new Date();
+    d.setDate(todayDate.getDate() - (29 - i));
+    return d.toISOString().slice(0, 10);
   });
 
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 11,
-    minutes: 29,
-    seconds: 0,
-  });
+  const [claimedDays, setClaimedDays] = useState([]);
+  const [claimDisabled, setClaimDisabled] = useState(false);
+
+  // Real-time countdown to midnight
+  const getTimeLeftToMidnight = () => {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const diff = midnight - now;
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+    const seconds = Math.floor((diff / 1000) % 60);
+    return { hours, minutes, seconds };
+  };
+  const [timeLeft, setTimeLeft] = useState(getTimeLeftToMidnight());
+
+  useEffect(() => {
+    const stored = localStorage.getItem("claimedDays");
+    if (stored) setClaimedDays(JSON.parse(stored));
+    const lastClaim = localStorage.getItem("lastClaim");
+    if (lastClaim) {
+      const last = new Date(lastClaim);
+      const now = new Date();
+      if (
+        last.getDate() === now.getDate() &&
+        last.getMonth() === now.getMonth() &&
+        last.getFullYear() === now.getFullYear()
+      ) {
+        setClaimDisabled(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("claimedDays", JSON.stringify(claimedDays));
+  }, [claimedDays]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft(getTimeLeftToMidnight())
+      if (
+        timeLeft.hours === 0 &&
+        timeLeft.minutes === 0 &&
+        timeLeft.seconds === 0
+      ) {
+        setClaimDisabled(false);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line
+  }, [timeLeft]);
 
   useEffect(() => {
     const handleBackButton = () => {
@@ -63,77 +101,103 @@ export const Home = () => {
     };
   }, [navigate, setUser]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft((prev) => {
-        const totalSeconds =
-          prev.hours * 3600 + prev.minutes * 60 + prev.seconds - 1;
-
-        if (totalSeconds <= 0) {
-          clearInterval(interval);
-          return { hours: 0, minutes: 0, seconds: 0 };
-        }
-
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-
-        return { hours, minutes, seconds };
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
+  const handleClaim = () => {
+    if (
+      claimedDays.length < 30 &&
+      !claimedDays.includes(todayDateStr) &&
+      !claimDisabled
+    ) {
+      setClaimedDays([...claimedDays, todayDateStr]);
+      setClaimDisabled(true);
+      localStorage.setItem("lastClaim", new Date().toISOString());
+    }
+  };
 
   if (loading) {
     return <Loader />;
   }
+
   return (
     <Box p={4}>
-      <Flex alignItems='center' mb={4}>
-        <img src={logo} alt='Logo' width='50px' height='50px' />
-        <Spacer />
-        <Heading size='md' textAlign='center'>
+      <Box mb={5}>
+        <img src={logo} alt="Logo" width="50px" height="50px" />
+      </Box>
+      <Flex alignItems="center" mb={4}>
+        <Heading size="md" textAlign="center">
           Welcome, {username}!
         </Heading>
         <Spacer />
-        <Icon as={FaBell} boxSize={6} cursor='pointer' />
+        <Icon as={FaBell} boxSize={6} cursor="pointer" />
       </Flex>
 
-      <Box bg='gray.100' p={4} borderRadius='md' boxShadow='md' mb={4}>
-        <HStack spacing={4} justifyContent='space-between' mb={4}>
-          {daysOfWeek.map((day, index) => (
-            <VStack
-              key={index}
-              bg={day.day === currentDay ? 'blue.500' : 'transparent'}
-              color={day.day === currentDay ? 'white' : 'black'}
-              p={2}
-              borderRadius='md'
-            >
-              <Text fontWeight='bold'>{day.day}</Text>
-              <Text>{day.date}</Text>
-            </VStack>
-          ))}
-        </HStack>
+      <Box p={5} mb={4} overflowX="auto">
+        <Flex minW="600px" gap={2} ml={-4}>
+          {daysInMonth.map((dateStr, idx) => {
+            const dayNum = new Date(dateStr).getDate();
+            const isClaimed = claimedDays.includes(dateStr);
+            return (
+              <Box
+                key={dateStr}
+                w="70px"
+                h="70px"
+                display="flex"
+                flexDirection="column"
+                alignItems="center"
+                justifyContent="center"
+                borderRadius="md"
+                fontWeight="bold"
+                bg={isClaimed ? "blue.500" : "white"}
+                color={isClaimed ? "white" : "black"}
+                border={
+                  isClaimed
+                    ? "2px solid #3182ce"
+                    : "1px solid #e2e8f0"
+                }
+                boxShadow={isClaimed ? "md" : "sm"}
+                flexShrink={0}
+                mr={idx === daysInMonth.length - 1 ? 2 : 0}
+              >
+                <Box
+                  borderRadius="full"
+                  bg={isClaimed ? "white" : "gray.200"}
+                  color={isClaimed ? "#3182ce" : "white"}
+                  padding={2}
+                  w={"30px"}
+                >
+                  {isClaimed ? <LuCheck /> : <LuPlus />}
+                </Box>
+                <Text>Day {dayNum}</Text>
+              </Box>
+            );
+          })}
+        </Flex>
       </Box>
+
       <Flex
-        justifyContent={'space-between'}
-        alignItems={'center'}
+        justifyContent={"space-between"}
+        alignItems={"center"}
         mb={4}
-        bg={'gray.100'}
+        bg={"gray.100"}
         p={3}
-        borderRadius='xl'
+        borderRadius="xl"
       >
         <Icon as={FaCalendarAlt} boxSize={6} />
-        <Box textAlign='center' mt={4}>
-          <Text fontSize='lg' fontWeight='bold'>
-            0 Day Check-in
+        <Box textAlign="center" mt={4}>
+          <Text fontSize="lg" fontWeight="bold">
+            {claimedDays.length} Day Check-in
           </Text>
-          <Text fontSize='sm' color='gray.500' mb={2}>
+          <Text fontSize="sm" color="gray.500" mb={2}>
             Next check-in: {timeLeft.hours} hr {timeLeft.minutes} min
           </Text>
         </Box>
-        <Button bg='orange' width='20%' borderRadius={'2xl'}>
+        <Button
+          bg="orange"
+          width="20%"
+          borderRadius={"2xl"}
+          onClick={handleClaim}
+          disabled={claimDisabled || claimedDays.length >= 30 || claimedDays.includes(todayDateStr)}
+          _disabled={{ opacity: 0.6, cursor: "not-allowed" }}
+        >
           Claim
         </Button>
       </Flex>
