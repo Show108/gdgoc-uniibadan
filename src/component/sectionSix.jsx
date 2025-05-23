@@ -14,7 +14,7 @@ import {
   Flex,
   SimpleGrid,
 } from "@chakra-ui/react";
-import mark from "../assets/vector (3).png";
+import mark from "../assets/vector(3).png";
 
 const registrationBenefits = [
   { text: "Premium learning resources" },
